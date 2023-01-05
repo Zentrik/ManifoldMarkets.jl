@@ -1,3 +1,4 @@
 /Manifest.toml
 src/helper.jl
-examples/
+ArbBot/
+.vscode

@@ -13,7 +13,7 @@ function getHTTP(url; query=nothing)
         query = filter(pair -> pair.second !== nothing, query)
     end
 
-    response = HTTP.get(url, query=query)
+    response = HTTP.get(url, query=query, connect_timeout=15, readtimeout=15)
     return JSON.parse(String(response.body))
 
     # slow? should be faster i think if we do it right
