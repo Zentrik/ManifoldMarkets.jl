@@ -92,7 +92,8 @@ function createBet(API_KEY, marketId, amount, outcome, limitProb=nothing)
 
     response = HTTP.post(BASE_URI * "/bet", headers = vcat(authHeader(API_KEY), "Content-Type" => "application/json"), body=JSON.json(body))
     bet = JSON.parse(String(response.body))
-    return bet["betId"]
+    bet["id"] = pop!(bet, "betId")
+    return Bet(bet)
 end
 
 function cancelBet(API_KEY, betId)

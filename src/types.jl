@@ -45,10 +45,10 @@ end
     limitProb::Optional(F) = nothing
 
     loanAmount::Optional(F) = nothing
-    userId::String
-    userAvatarUrl::String
-    userUsername::String
-    userName::String
+    userId::Optional(String) = nothing # not returned when making a bet
+    userAvatarUrl::Optional(String) = nothing # not returned when making a bet
+    userUsername::Optional(String) = nothing # not returned when making a bet
+    userName::Optional(String) = nothing # not returned when making a bet
 
     orderAmount::Optional(F) = nothing
     isFilled::Optional(Bool) = nothing
