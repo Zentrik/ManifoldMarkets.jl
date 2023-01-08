@@ -4,7 +4,7 @@ export urlToSlug, getAllMarkets, getMarketBySlug, getMarketById, getBets, getAll
 
 using ..ManifoldMarkets
 
-using HTTP, JSON
+using HTTP, JSON3
 
 const BASE_URI = "https://manifold.markets/api/v0"
 
@@ -13,8 +13,8 @@ function getHTTP(url; query=nothing)
         query = filter(pair -> pair.second !== nothing, query)
     end
 
-    response = HTTP.get(url, query=query, connect_timeout=15, readtimeout=15)
-    return JSON.parse(String(response.body))
+    response = HTTP.get(url, query=query, connect_timeout=15, readtimeout=15, connection_limit=64)
+    return JSON3.read(response.body)
 
     # slow? should be faster i think if we do it right
     # HTTP.open(:GET, url, query=) do http
@@ -29,55 +29,44 @@ end
 
 """A client for interacting with the website manifold.markets."""
 
-function getAllMarkets(;limit = nothing, before = nothing)
-    response = getHTTP(BASE_URI * "/markets", query=["limit" => limit, "before" => before])
-    return Market.(response)
-end
+getAllMarkets(;limit = nothing, before = nothing) = getHTTP(BASE_URI * "/markets", query=["limit" => limit, "before" => before])
 
-function getMarketBySlug(slug)
-    response = getHTTP(BASE_URI * "/slug/" * slug)
-    return Market(response)
-end
+getMarketBySlug(slug) = getHTTP(BASE_URI * "/slug/" * slug)
 
 function getMarketById(Id)
     response = getHTTP(BASE_URI * "/market/" * Id)
     return Market(response)
 end
 
-function getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, marketId = nothing)
-    Bets = Bet[] # size unknown, as we don't know number of bets in market
-    numberOfBets = 0
-    lastBedID = before
+getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, marketId = nothing) = response = getHTTP(BASE_URI * "/bets", query=["limit" => limit, "before" => before, "username" => username, "contractSlug" => slug, "contractId" => marketId]) # When we've fetched all bets, this returns an empty list
 
-    while numberOfBets < limit
-        response = getHTTP(BASE_URI * "/bets", query=["limit" => min(1000, limit - numberOfBets), "before" => lastBedID, "username" => username, "contractSlug" => slug, "contractId" => marketId]) # When we've fetched all bets, this returns an empty list
+# function getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, marketId = nothing)
+#     numberOfBets = 0
+#     lastBedID = before
 
-        if isempty(response)
-            break
-        end 
+#     while numberOfBets < limit
+#         response = getHTTP(BASE_URI * "/bets", query=["limit" => min(1000, limit - numberOfBets), "before" => lastBedID, "username" => username, "contractSlug" => slug, "contractId" => marketId]) # When we've fetched all bets, this returns an empty list
 
-        numberOfBets += min(1000, limit - numberOfBets)
-        append!(Bets, Bet.(response))
-        lastBedID = Bets[end].id
+#         if isempty(response)
+#             break
+#         end 
 
-        if numberOfBets % 1000 != 0 || numberOfBets != length(Bets) # If its not a multiple of 1000, we've reached the limit or all bets have been fetched
-            break
-        end
-    end
-    return Bets
-end
+#         numberOfBets += min(1000, limit - numberOfBets)
+#         append!(Bets, Bet.(response))
+#         lastBedID = Bets[end].id
 
-getAllBets(;before=nothing, username=nothing, slug=nothing, marketId = nothing) = getBets(limit=2^60, before=before, username=username, slug=slug, marketId = marketId)
+#         if numberOfBets % 1000 != 0 || numberOfBets != length(Bets) # If its not a multiple of 1000, we've reached the limit or all bets have been fetched
+#             break
+#         end
+#     end
+#     return Bets
+# end
 
-function getUserByUsername(handle)
-    response = getHTTP(BASE_URI * "/user/" * handle)
-    return User(response)
-end
+# getAllBets(;before=nothing, username=nothing, slug=nothing, marketId = nothing) = getBets(limit=2^60, before=before, username=username, slug=slug, marketId = marketId)
 
-function getUserById(userId)
-    response = getHTTP(BASE_URI * "/user/by-id/" * userId)
-    return User(response)
-end
+getUserByUsername(handle) = getHTTP(BASE_URI * "/user/" * handle)
+
+getUserById(userId) = getHTTP(BASE_URI * "/user/by-id/" * userId)
 
 function authHeader(API_KEY)
     return ["Authorization" => "Key " * API_KEY]
@@ -90,17 +79,17 @@ function createBet(API_KEY, marketId, amount, outcome, limitProb=nothing)
         body["limitProb"] = limitProb
     end
 
-    response = HTTP.post(BASE_URI * "/bet", headers = vcat(authHeader(API_KEY), "Content-Type" => "application/json"), body=JSON.json(body))
-    bet = JSON.parse(String(response.body))
-    bet["id"] = pop!(bet, "betId")
-    return Bet(bet)
+    response = HTTP.post(BASE_URI * "/bet", headers = vcat(authHeader(API_KEY), "Content-Type" => "application/json"), body=JSON3.write(body))
+    bet = JSON3.read(response.body)
+    # bet["id"] = pop!(bet, "betId")
+    return bet
 end
 
 function cancelBet(API_KEY, betId)
     body = Dict("bedId" => betId)
 
-    response = HTTP.post(BASE_URI * "/bet/cancel/" * betId, vcat(authHeader(API_KEY), "Content-Type" => "application/json"), body=JSON.json(body))
-    bet = JSON.parse(String(response.body))
+    response = HTTP.post(BASE_URI * "/bet/cancel/" * betId, vcat(authHeader(API_KEY), "Content-Type" => "application/json"), body=JSON3.write(body))
+    bet = JSON3.read(response.body)
 
-    return Bet(bet)
+    return bet
 end

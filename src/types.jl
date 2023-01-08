@@ -2,7 +2,7 @@
 
 export Bet, Market, User
 
-using JSON, Parameters
+using Parameters
 
 const I = Int64
 const F = Float64
