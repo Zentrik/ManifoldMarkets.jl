@@ -115,7 +115,7 @@ end
     mechanism # dpm-2 or cpmm-1
 
     probability::Optional(F) = nothing
-    pool::Dict{Symbol, F}
+    pool::NamedTuple{(:NO, :YES), Tuple{F, F}}
     p::Optional(F) = nothing
     totalLiquidity::Optional(F) = nothing
 
@@ -141,7 +141,7 @@ end
 
 function Market(dict::Dict{String, Any})
     symbolDict = stringKeysToSymbol(dict)
-    symbolDict[:pool] = stringKeysToSymbol(symbolDict[:pool])
+    symbolDict[:pool] = NamedTuple(stringKeysToSymbol(symbolDict[:pool]))
     try
         return Market(;symbolDict...)
     catch error
