@@ -8,7 +8,7 @@ using HTTP, JSON3
 
 const BASE_URI = "https://manifold.markets/api/v0"
 
-function getHTTP(url; query=nothing)
+function getHTTP(url, query=nothing)
     if query !== nothing
         query = filter(pair -> pair.second !== nothing, query)
     end
@@ -29,16 +29,13 @@ end
 
 """A client for interacting with the website manifold.markets."""
 
-getAllMarkets(;limit = nothing, before = nothing) = getHTTP(BASE_URI * "/markets", query=["limit" => limit, "before" => before])
+getAllMarkets(;limit = nothing, before = nothing) = getHTTP(BASE_URI * "/markets", ["limit" => limit, "before" => before])
 
-getMarketBySlug(slug) = getHTTP(BASE_URI * "/slug/" * slug)
+@inline getMarketBySlug(slug) = getHTTP(BASE_URI * "/slug/" * slug)
 
-function getMarketById(Id)
-    response = getHTTP(BASE_URI * "/market/" * Id)
-    return Market(response)
-end
+getMarketById(Id) = getHTTP(BASE_URI * "/market/" * Id)
 
-getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, marketId = nothing) = response = getHTTP(BASE_URI * "/bets", query=["limit" => limit, "before" => before, "username" => username, "contractSlug" => slug, "contractId" => marketId]) # When we've fetched all bets, this returns an empty list
+getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, marketId = nothing) = response = getHTTP(BASE_URI * "/bets", ["limit" => limit, "before" => before, "username" => username, "contractSlug" => slug, "contractId" => marketId]) # When we've fetched all bets, this returns an empty list
 
 # function getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, marketId = nothing)
 #     numberOfBets = 0

@@ -2,3 +2,4 @@
 src/helper.jl
 ArbBot/
 .vscode
+alloc-profile*
