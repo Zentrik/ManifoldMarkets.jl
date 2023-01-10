@@ -4,17 +4,37 @@ export urlToSlug, getAllMarkets, getMarketBySlug, getMarketById, getBets, getAll
 
 using ..ManifoldMarkets
 
-using HTTP, JSON3
+using HTTP, LazyJSON, JSON3, Downloads
 
 const BASE_URI = "https://manifold.markets/api/v0"
 
-function getHTTP(url, query=nothing)
+function getHTTPRaw(url, query=nothing)
     if query !== nothing
         query = filter(pair -> pair.second !== nothing, query)
     end
 
-    response = HTTP.get(url, query=query, connect_timeout=15, readtimeout=15, connection_limit=64)
-    return JSON3.read(response.body)
+    # body = IOBuffer()
+    # response = HTTP.get(url, query=query, connect_timeout=5, readtimeout=5, connection_limit=16, response_stream=body)
+    # return response, take!(body)
+
+    response = HTTP.get(url, query=query, connect_timeout=5, readtimeout=5, connection_limit=64)
+    return response
+
+    # slow? should be faster i think if we do it right
+    # HTTP.open(:GET, "https://manifold.markets/api/v0/bets?limit=1") do http
+    #     JSON.parse(http)
+    # end
+end
+
+function request_body(url::AbstractString; kwargs...)
+    body = IOBuffer()
+    resp = Downloads.request(url; output=body, kwargs...)
+    return resp, take!(body)
+end
+
+function getHTTP(url, query=nothing)
+    response = getHTTPRaw(url, query)
+    return JSON3.read(response.body::Vector{UInt8})
 
     # slow? should be faster i think if we do it right
     # HTTP.open(:GET, url, query=) do http
@@ -31,11 +51,11 @@ end
 
 getAllMarkets(;limit = nothing, before = nothing) = getHTTP(BASE_URI * "/markets", ["limit" => limit, "before" => before])
 
-@inline getMarketBySlug(slug) = getHTTP(BASE_URI * "/slug/" * slug)
+@inline getMarketBySlug(slug)::LazyJSON.Object{Nothing, String} = getHTTP(BASE_URI * "/slug/" * slug)::LazyJSON.Object{Nothing, String}
 
 getMarketById(Id) = getHTTP(BASE_URI * "/market/" * Id)
 
-getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, marketId = nothing) = response = getHTTP(BASE_URI * "/bets", ["limit" => limit, "before" => before, "username" => username, "contractSlug" => slug, "contractId" => marketId]) # When we've fetched all bets, this returns an empty list
+@inline getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, marketId = nothing) = getHTTP(BASE_URI * "/bets", ["limit" => limit, "before" => before, "username" => username, "contractSlug" => slug, "contractId" => marketId]) # When we've fetched all bets, this returns an empty list
 
 # function getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, marketId = nothing)
 #     numberOfBets = 0
@@ -61,7 +81,7 @@ getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, marketId = 
 
 # getAllBets(;before=nothing, username=nothing, slug=nothing, marketId = nothing) = getBets(limit=2^60, before=before, username=username, slug=slug, marketId = marketId)
 
-getUserByUsername(handle) = getHTTP(BASE_URI * "/user/" * handle)
+@inline getUserByUsername(handle)::LazyJSON.Object{Nothing, String} = getHTTP(BASE_URI * "/user/" * handle)::LazyJSON.Object{Nothing, String}
 
 getUserById(userId) = getHTTP(BASE_URI * "/user/by-id/" * userId)
 
