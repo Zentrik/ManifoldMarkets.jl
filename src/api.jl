@@ -50,7 +50,7 @@ function getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, ma
     lastBedID = before
 
     while numberOfBets < limit
-        response = getHTTP(BASE_URI * "/bets", query=["limit" => min(1000, limit - numberOfBets), "before" => lastBedID, "username" => username, "contractSlug" => slug, "contractId" => marketId]) # When we've fetched all bets, this returns an empty list
+        response = getHTTP(BASE_URI * "/bets", query=["limit" => min(1000, limit - numberOfBets), "before" => lastBedID, "username" => username, "market" => slug, "contractId" => marketId]) # When we've fetched all bets, this returns an empty list
 
         if isempty(response)
             break
