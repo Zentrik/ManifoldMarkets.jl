@@ -137,6 +137,7 @@ end
 
     description::Optional(Union{Dict{String, Any}, String}) = nothing
     textDescription::Optional(String) = nothing
+    coverImageUrl::Optional(String) = nothing
 end
 
 function Market(dict::Dict{String, Any})
