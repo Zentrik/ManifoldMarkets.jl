@@ -44,6 +44,10 @@ end
     id::String
     limitProb::Optional(F) = nothing
 
+    allOutcomeShares::Optional(Dict{String, F}) = nothing
+    allBetAmounts::Optional(Dict{String, F}) = nothing
+    value::Optional(F) = nothing
+
     loanAmount::Optional(F) = nothing
     userId::Optional(String) = nothing # not returned when making a bet
     userAvatarUrl::Optional(String) = nothing # not returned when making a bet
@@ -122,6 +126,7 @@ end
     min::Optional(F) = nothing
     max::Optional(F) = nothing
     isLogScale::Optional(Bool) = nothing
+    value::Optional(F) = nothing
 
     volume::F
     volume24Hours::F
