@@ -44,7 +44,7 @@ function getMarketById(Id)
     return Market(response)
 end
 
-function getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, marketId = nothing)
+function getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, marketId=nothing)
     Bets = Bet[] # size unknown, as we don't know number of bets in market
     numberOfBets = 0
     lastBedID = before
@@ -67,7 +67,7 @@ function getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, ma
     return Bets
 end
 
-getAllBets(;before=nothing, username=nothing, slug=nothing, marketId = nothing) = getBets(limit=2^60, before=before, username=username, slug=slug, marketId = marketId)
+getAllBets(;before=nothing, username=nothing, slug=nothing, marketId = nothing) = getBets(limit=2^60, before=before, username=username, slug=slug, marketId=marketId)
 
 function getUserByUsername(handle)
     response = getHTTP(BASE_URI * "/user/" * handle)
