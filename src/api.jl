@@ -6,7 +6,7 @@ using ..ManifoldMarkets
 
 using HTTP, JSON
 
-const BASE_URI = "https://manifold.markets/api/v0"
+const BASE_URI = "http://manifold.markets/api/v0"
 
 function getHTTP(url; query=nothing)
     if query !== nothing
