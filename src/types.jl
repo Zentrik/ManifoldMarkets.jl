@@ -32,6 +32,7 @@ function Fill(dict::Dict{String, Any})
     return Fill(;stringKeysToSymbol(dict)...)
 end
 
+# https://github.com/manifoldmarkets/manifold/blob/main/common/src/bet.ts
 @with_kw struct Bet @deftype F
     """Represents a bet."""
 
@@ -74,6 +75,8 @@ end
     challengeSlug::Optional(String) = nothing
     isLiquidityProvision::Optional(Bool) = nothing
     dpmShares::Optional(F) = nothing
+    visibility::Optional(String) = nothing
+    expiresAt::Optional(F) = nothing
 end
 
 function Bet(dict::Dict{String, Any})
@@ -93,6 +96,7 @@ function Bet(dict::Dict{String, Any})
     end
 end
 
+# https://github.com/manifoldmarkets/manifold/blob/main/common/src/contract.ts
 @with_kw struct Market @deftype String
     """Represents a market."""
 
