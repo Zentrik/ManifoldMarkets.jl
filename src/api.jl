@@ -34,8 +34,12 @@ function getAllMarkets(;limit = nothing, before = nothing)
     return Market.(response)
 end
 
-function getMarketBySlug(slug)
+function getMarketBySlug(slug, raw=false)
     response = getHTTP(BASE_URI * "/slug/" * slug)
+    if raw
+        return response
+    end
+
     return Market(response)
 end
 

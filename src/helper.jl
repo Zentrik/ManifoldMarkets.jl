@@ -127,7 +127,7 @@ end
 
 poolToProb(p, pool) = p * pool[:NO] / (p * pool[:NO] + (1-p) * pool[:YES])
 
-function betCPPM(p, pool, betAmount, outcome)
+@inline @fastmath function betCPPM(p, pool, betAmount, outcome)
     # betAmount = max(betAmount - .1, 0.) # Fee?
 
     y = pool[:YES]
@@ -184,7 +184,8 @@ function betToShares(p, pool, probability, limitOrders, sortedLimitProbs, betAmo
     oldPool = pool
     newProb = probability
 
-    amount, shares = (0., 0.)
+    amount = 0.
+    shares = 0.
 
     if -1 < betAmount < 1 # can only place bets >= 1 in magnitude
         return (shares=shares, probability=newProb)
