@@ -1,6 +1,6 @@
 """Contains the client interface."""
 
-export urlToSlug, getAllMarkets, getMarketBySlug, getMarketById, getBets, getAllBets, getUserByUsername, getUserById, createBet, cancelBet
+export urlToSlug, getAllMarkets, getMarketBySlug, getMarketById, getPositionsOnMarket, getLimitOrdersOnMarket, getBet, getBets, getAllBets, getUserByUsername, getUserById, createBet, cancelBet
 
 using ..ManifoldMarkets
 
@@ -42,6 +42,23 @@ end
 function getMarketById(Id)
     response = getHTTP(BASE_URI * "/market/" * Id)
     return Market(response)
+end
+
+function getPositionsOnMarket(marketId; order=nothing, top=nothing, bottom=nothing, userId=nothing)
+    response = getHTTP(BASE_URI * "/market/" * marketId * "/positions", query=["order" => order, "top" => top, "bottom" => bottom, "userId" => userId])
+    return ContractMetric.(response)
+end
+
+function getLimitOrdersOnMarket(marketId, limit=1000, APIKEY)
+    response = HTTP.get("http://pxidrgkatumlvfqaxcll.supabase.co/rest/v1/contract_bets?select=data&limit=$limit&order=data->>createdTime.asc&data->isFilled=eq.false&data->isCancelled=eq.false&contract_id=eq.$marketId", headers= ["apikey" => APIKEY, "Content-Type" => "application/json"])
+    responseJSON = JSON.parse(String(response.body))
+    return map(limitOrder -> Bet(limitOrder["data"]), responseJSON)
+end
+
+function getBet(betId, APIKEY)
+    response = HTTP.get("http://pxidrgkatumlvfqaxcll.supabase.co/rest/v1/contract_bets?select=data&bet_id=eq.$betId", headers= ["apikey" => APIKEY, "Content-Type" => "application/json"])
+    responseJSON = JSON.parse(String(response.body))
+    return Bet(responseJSON[1]["data"])
 end
 
 function getBets(;limit=1000, before=nothing, username=nothing, slug=nothing, marketId=nothing)

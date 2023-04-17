@@ -1,6 +1,6 @@
 """Contains the various types of data that Manifold can return."""
 
-export Bet, Market, User
+export Bet, Market, User, ContractMetric, stringKeysToSymbol
 
 using JSON, Parameters
 
@@ -217,6 +217,38 @@ function User(dict::Dict{String, Any})
 
     try
         return User(;symbolDict...)
+    catch error
+        display(dict)
+        display(symbolDict)
+
+        throw(error)
+    end
+end
+
+@with_kw struct ContractMetric @deftype String
+    contractId
+    from::Optional(Dict{String, Dict{String, F}}) = nothing
+    hasNoShares::Bool
+    hasShares::Bool
+    hasYesShares::Bool
+    invested::F
+    loan::F
+    maxSharesOutcome::Optional(String) = nothing
+    payout::F
+    profit::F
+    profitPercent::F
+    totalShares::Dict{String, F}
+    userId
+    userUsername
+    userName
+    userAvatarUrl
+    lastBetTime::F
+end
+
+function ContractMetric(dict::Dict{String, Any})
+    symbolDict = stringKeysToSymbol(dict)
+    try
+        return ContractMetric(;symbolDict...)
     catch error
         display(dict)
         display(symbolDict)
