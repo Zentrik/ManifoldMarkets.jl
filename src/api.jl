@@ -53,7 +53,7 @@ function getPositionsOnMarket(marketId; order=nothing, top=nothing, bottom=nothi
     return ContractMetric.(response)
 end
 
-function getLimitOrdersOnMarket(marketId, limit=1000, APIKEY)
+function getLimitOrdersOnMarket(marketId, APIKEY, limit=1000)
     response = HTTP.get("http://pxidrgkatumlvfqaxcll.supabase.co/rest/v1/contract_bets?select=data&limit=$limit&order=data->>createdTime.asc&data->isFilled=eq.false&data->isCancelled=eq.false&contract_id=eq.$marketId", headers= ["apikey" => APIKEY, "Content-Type" => "application/json"])
     responseJSON = JSON.parse(String(response.body))
     return map(limitOrder -> Bet(limitOrder["data"]), responseJSON)
